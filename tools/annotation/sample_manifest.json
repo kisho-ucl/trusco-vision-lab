@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "labels": ["Inspect", "Sort", "Transport", "Other", "Unclear"],
+  "clips": [
+    {
+      "clip_id": "sample-001",
+      "worker_id": "worker-03",
+      "camera_id": "cam-02",
+      "start_time": "2026-05-01T10:14:20+09:00",
+      "end_time": "2026-05-01T10:14:50+09:00",
+      "duration_sec": 30,
+      "video_url": "",
+      "thumbnail_url": "",
+      "zone_hint": "inspection_table",
+      "track_summary": {
+        "distance_m": 3.2,
+        "dominant_zone": "inspection_table",
+        "zone_transitions": ["aisle", "inspection_table"]
+      }
+    },
+    {
+      "clip_id": "sample-002",
+      "worker_id": "worker-05",
+      "camera_id": "cam-04",
+      "start_time": "2026-05-01T10:16:00+09:00",
+      "end_time": "2026-05-01T10:16:40+09:00",
+      "duration_sec": 40,
+      "video_url": "",
+      "thumbnail_url": "",
+      "zone_hint": "sorting_area",
+      "track_summary": {
+        "distance_m": 7.8,
+        "dominant_zone": "sorting_area",
+        "zone_transitions": ["sorting_area", "shelf", "sorting_area"]
+      }
+    },
+    {
+      "clip_id": "sample-003",
+      "worker_id": "worker-02",
+      "camera_id": "cam-01",
+      "start_time": "2026-05-01T10:18:05+09:00",
+      "end_time": "2026-05-01T10:18:35+09:00",
+      "duration_sec": 30,
+      "video_url": "",
+      "thumbnail_url": "",
+      "zone_hint": "main_aisle",
+      "track_summary": {
+        "distance_m": 22.4,
+        "dominant_zone": "main_aisle",
+        "zone_transitions": ["packing", "main_aisle", "dock"]
+      }
+    }
+  ]
+}

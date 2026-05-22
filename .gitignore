@@ -1,0 +1,25 @@
+.DS_Store
+
+# Papers and local reference PDFs
+paper/
+vision/*.pdf
+
+# Local/private data
+data/
+outputs/
+annotations/
+clips/
+tracking_outputs/
+
+# Video files
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Python / JS local artifacts
+__pycache__/
+*.pyc
+node_modules/
+.venv/
+venv/

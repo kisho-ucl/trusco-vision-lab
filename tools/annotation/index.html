@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Warehouse Clip Annotation</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div>
+          <h1>Warehouse Clip Annotation</h1>
+          <p id="manifestSummary">Load a clip manifest to begin.</p>
+        </div>
+        <div class="topbar-actions">
+          <label class="file-button">
+            Load manifest
+            <input id="manifestInput" type="file" accept="application/json">
+          </label>
+          <button id="loadSampleButton" type="button">Load sample</button>
+          <button id="exportButton" type="button">Export JSONL</button>
+        </div>
+      </header>
+
+      <section class="progress-wrap" aria-label="annotation progress">
+        <div id="progressBar" class="progress-bar"></div>
+      </section>
+
+      <section class="workspace">
+        <section class="viewer-panel" aria-label="clip viewer">
+          <div id="mediaFrame" class="media-frame">
+            <video id="clipVideo" controls muted></video>
+            <img id="clipImage" alt="">
+            <div id="emptyMedia" class="empty-media">
+              <strong>No media linked</strong>
+              <span>Use metadata and notes while the real clips are being connected.</span>
+            </div>
+          </div>
+          <div class="clip-nav">
+            <button id="prevButton" type="button">Previous</button>
+            <span id="clipCounter">0 / 0</span>
+            <button id="nextButton" type="button">Next</button>
+          </div>
+        </section>
+
+        <section class="detail-panel" aria-label="clip details">
+          <div class="section-heading">
+            <h2 id="clipTitle">No clip selected</h2>
+            <span id="currentLabel" class="status-pill">unlabeled</span>
+          </div>
+
+          <dl id="metadataList" class="metadata-list"></dl>
+
+          <div class="label-grid" id="labelGrid" aria-label="labels"></div>
+
+          <fieldset class="confidence">
+            <legend>Confidence</legend>
+            <label><input type="radio" name="confidence" value="high"> High</label>
+            <label><input type="radio" name="confidence" value="medium" checked> Medium</label>
+            <label><input type="radio" name="confidence" value="low"> Low</label>
+          </fieldset>
+
+          <label class="note-field">
+            Note
+            <textarea id="noteInput" rows="5" placeholder="Ambiguity, visible objects, zone changes, failure cases..."></textarea>
+          </label>
+
+          <div class="detail-actions">
+            <button id="saveButton" type="button">Save annotation</button>
+            <button id="clearButton" type="button">Clear current</button>
+          </div>
+        </section>
+
+        <aside class="queue-panel" aria-label="clip queue">
+          <div class="section-heading">
+            <h2>Queue</h2>
+            <span id="queueSummary">0 labeled</span>
+          </div>
+          <ol id="clipQueue" class="clip-queue"></ol>
+        </aside>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
