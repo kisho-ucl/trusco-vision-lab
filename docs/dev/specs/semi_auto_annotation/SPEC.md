@@ -109,6 +109,8 @@ flowchart LR
 
 ## Data / Interfaces
 
+アノテーションプロトタイプが扱う実データ（トラッキングJSON、歪み補正動画、タイムスタンプキャッシュなど）の共通データ構造や物理配置の詳細については、[TRUSCO Dataset & Tracking Result Specification](../../trusco_dataset_spec.md) を参照してください。
+
 ### Clip Manifest
 
 入力はJSON manifestにする。

@@ -68,7 +68,7 @@ constructionでは俯瞰・監視カメラを用いたworker activity recognitio
 | Design | 頭を整理したい日 | 半自動annotation workflowやSkill / module構成を図・箇条書きで整理する |
 | Implementation | 手を動かしたい日 | worker clip extractionの最小実装を進める |
 | Experiment | データを見たい日 | 既存tracking outputを確認し、trajectory + zoneで何が取れそうか見る |
-| Writing | 文章化したい日 | `docs/research_plan.md`や`docs/vision_context.md`を後輩が読める形に整える |
+| Writing | 文章化したい日 | `docs/project/research_plan.md`や`docs/project/vision_context.md`を後輩が読める形に整える |
 | Maintenance | 軽く進めたい日 | logs整理、docs index更新、古いworking notesの避難 |
 
 ## Next Decisions
@@ -80,8 +80,8 @@ constructionでは俯瞰・監視カメラを用いたworker activity recognitio
 5. TRUSCO映像処理基盤のSkill / module化で、まず何を部品として定義するか決める。
 6. 半自動annotation toolの最小構成を決める。
 
-Implementation candidates are tracked in [Implementation Backlog](docs/implementation_backlog.md).
-Development process is tracked in [Development Guide](docs/DEVELOPMENT_GUIDE.md).
+Implementation candidates are tracked in [Implementation Backlog](docs/dev/implementation_backlog.md).
+Development process is tracked in [Development Guide](docs/dev/DEVELOPMENT_GUIDE.md).
 
 ## Current Reading Priority
 
@@ -129,9 +129,9 @@ Top items:
 - [TRUSCO Survey Update](survey/trusco_research_update.md)
 - [Survey Findings](survey/findings.md)
 - [Reading Priority](survey/reading_priority.md)
-- [Vision Context](docs/vision_context.md)
-- [Hands-on Investigation Plan](docs/hands_on_investigation_plan.md)
-- [Implementation Backlog](docs/implementation_backlog.md)
-- [Development Guide](docs/DEVELOPMENT_GUIDE.md)
-- [Semi-auto Annotation Spec](docs/specs/semi_auto_annotation/SPEC.md)
-- [Semi-auto Annotation Mini Specs](docs/specs/semi_auto_annotation/MINI_SPECS.md)
+- [Vision Context](docs/project/vision_context.md)
+- [Hands-on Investigation Plan](docs/dev/hands_on_investigation_plan.md)
+- [Implementation Backlog](docs/dev/implementation_backlog.md)
+- [Development Guide](docs/dev/DEVELOPMENT_GUIDE.md)
+- [Semi-auto Annotation Spec](docs/dev/specs/semi_auto_annotation/SPEC.md)
+- [Semi-auto Annotation Mini Specs](docs/dev/specs/semi_auto_annotation/MINI_SPECS.md)

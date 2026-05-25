@@ -56,7 +56,7 @@ Current assets:
 
 - Spec: [specs/semi_auto_annotation/SPEC.md](specs/semi_auto_annotation/SPEC.md)
 - Mini Specs: [specs/semi_auto_annotation/MINI_SPECS.md](specs/semi_auto_annotation/MINI_SPECS.md)
-- Prototype: [tools/annotation](../tools/annotation/README.md)
+- Prototype: [tools/annotation](../../tools/annotation/README.md)
 
 ### 3. Trajectory + Zone Baseline
 

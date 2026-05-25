@@ -157,57 +157,95 @@ Draft.
 
 ## v1 Clip Extraction and Coverage Planning
 
-### Goal
-
-既存または今後得られるtracking outputから、person IDごとのclip manifestを生成する。
-
-v1の目的は動画処理を完成させることではなく、annotation UIへ渡せるmanifestを実データ由来で作れるようにすること。
-
-また、適当にpick upされたclipへバラバラにラベルを付けるのではなく、提供された30分程度のannotation batch単位で「どのperson ID・どのclipがどれだけラベル済みか」を見ながら進められる土台を作る。
-
-trackingで同じ人に常に正しいIDが付くとは限らないため、activity annotationの前処理としてperson ID assignment / correctionが必要になる可能性がある。
-
 ### Status
 
-Draft, needs server data discovery.
+In Progress (Implementation complete, undergoing testing)
 
-### Discovery First
-
-サーバ上で実装前に以下を確認する。
-
-- raw video path。
-- tracking output path。
-- tracking output format。
-- timestamp format。
-- camera ID naming。
-- tracking ID naming。
-- person ID assignmentに使えそうな情報。
-- bbox / world coordinate / zone availability。
-- raw videoとtracking timestampの同期方法。
-- 30分JSONなど、annotation batchとして提供される単位。
-- 人が画面内にいる時間帯をどう抽出できるか。
-- cameraを跨ぐclipがどのように表現されるか。
-- 同一人物らしさを推定するために使えるappearance / trajectory / time continuity情報。
+### Discovery Results (Summary)
+* **トラッキングJSON座標**: `"original_bbox"` または `"bbox_list"` に格納されているローカル座標 `[cx, cy, w, h]` をそのままトリミングに使用可能。
+* **フレーム特定**: `orig_frame = frame_id * 2 + 1` とし、経過時間と `ts_cache` から動画内の正確な `(vid_idx, frm_idx)` を逆引き。
+* **マッピングの解決**: `/mnt` が Read-Only であるため、リポジトリ内に `config/dataset_mapping.json` を設けて `Result_ID` から実験日時のマッピングを解決する。
 
 ### Scope
 
 #### In
 
-- tracking output形式の確認。
-- manifest生成に必要な最小フィールドの決定。
-- batch ID、source video ID、camera ID、person ID、original tracking ID、start / end time、video pathを含むmanifest生成。
-- 可能ならzone hintとtrajectory summaryを追加。
-- batch単位のcoverage summary。
-- person ID assignment / correctionに必要なcandidate情報。
-- 最初にラベル付けするbatch候補を選ぶための情報。
+* **前処理スクリプトの開発**: `tools/annotation/generate_manifest.py` の新規作成。
+  * 引数に `--result_id` (例: `78`), `--use_frame` (フレーム間隔), `--limit_tracks` (テスト用トラック数上限) などを取る。
+  * `Result_ID` をキーにマッピング定義ファイルを読み込み、入力データ・動画・`ts_cache` の物理パスおよび開始時刻を特定する。
+  * トラッキングJSON内の各 `track_id` とカメラごとに、人物が映っている区間のトリミング画像（JPG）を連番で切り出し保存する。
+  * ブラウザUIがインポート可能な `manifest.json` を自動生成する。
+* **マッピング定義ファイルの作成**: `tools/annotation/config/dataset_mapping.json` の作成。
+  * `Result_ID="78"` に対応するメタデータ (`date="2024-10-03"`, `start_time="10:00:00"`, `ts_cache`パス等) を記述する。
+* **中間・結果データの保存場所**:
+  * 切り出した一時画像とマニフェストは、共有マウント空間の `/mnt/bigdata/01_projects/2024_trusco/task_annotation_clips/<Result_ID>/` に保存する。
+  * 人間がアノテーションした最終成果物の JSONL は、`/mnt/bigdata/01_projects/2024_trusco/task_annotation/<Result_ID>/` に保存する。
+  * 既存のデータセット（`track_result` 等）や動画ファイルは一切変更しない。
 
 #### Out
 
-- 高度なclip品質判定。
-- 自動ラベル推定。
-- clustering。
-- dataset split。
-- 完全なtimeline annotation UI。
+* クリップの自動結合や時間的なセグメンテーション（まずはトラックが存在する全範囲を単純に切り出す）。
+* アノテーションUI側の大幅な変更（v1のUI接続は別マイルストーンとする）。
+
+### Data / Interfaces
+
+#### 物理保存ディレクトリ構成
+```text
+dataset/
+├── task_annotation_clips/          # 一時切り出しデータ（巨大）
+│   └── <Result_ID>/                # 例: 78
+│       ├── manifest.json           # UI用 manifest
+│       └── clips/                  # トリミングされた連番画像
+│           └── track_<id>_<camID>/ # トラック・カメラ別フォルダ (例: track_148_A1)
+│               ├── 000001.jpg
+│               └── ...
+└── task_annotation/                # 最終成果物（クリーン・軽量）
+    └── <Result_ID>/
+        └── annotations.jsonl       # 人間がアノテーションした結果
+```
+
+#### 生成される `manifest.json` のスキーマ
+```json
+{
+  "version": 1,
+  "labels": ["Inspect", "Sort", "Transport", "Other", "Unclear"],
+  "clips": [
+    {
+      "clip_id": "78_track_148_A1",
+      "batch_id": "78",
+      "person_id": "track-148",
+      "original_tracking_id": "148",
+      "camera_id": "A1",
+      "start_time": "2024-10-03T10:00:00.2+09:00",
+      "end_time": "2024-10-03T10:01:25.4+09:00",
+      "duration_sec": 85.2,
+      "image_folder": "clips/track_148_A1",
+      "frame_count": 426,
+      "frame_indices": [1, 3, 5, 7, 9],  // 連番画像の元々の動画フレーム番号
+      "zone_hint": "unknown"
+    }
+  ]
+}
+```
+
+### Success Criteria
+
+* コマンド `python generate_manifest.py --result_id 78 --use_frame 5 --limit_tracks 3` がエラーなしで動作完了すること。
+* 指定された共有空間 `/home/kisho_ucl/kisho_ws/trusco-vision-lab/dataset/task_annotation_clips/78/` ディレクトリが作成され、その下に `manifest.json` と、テスト用に指定したトラックの `clips/` ディレクトリ（連番JPG入り）が正しく配置されること。
+* 生成された `manifest.json` が定義したスキーマを満たしており、画像パスやフレーム数がトラッキング結果と一致していること。
+
+### Open Questions
+
+1. **ブラウザUIからの画像読み込み**: Webブラウザはセキュリティ制限（CORS）のためローカルファイル（`file://`）や異なるドメインの物理ディレクトリの画像を直接読めない場合があります。アノテーションUIを起動する際に、簡易的なローカルWebサーバー（例: `python -m http.server`）を立ち上げて `task_annotation_clips/` をホストする運用にするか。
+2. **切り出すフレームの間引き間隔**: トラッキングデータ自体は 0.2秒（5fps）間隔で存在しますが、アノテーション作業用としては `--use_frame 5`（1秒に1枚）程度に間引いて切り出すのが適切か。
+
+### Implementation Gate
+
+- [x] Server data discoveryが終わっている。
+- [x] 実tracking outputのsample rowとschemaを元に切り出しロジックを設計した。
+- [x] v1で作るmanifest schemaと物理フォルダ構造を決定した。
+- [x] 中間データの出力先として `/mnt` 内の安全な新規ディレクトリ `task_annotation_clips/` を決定した。
+- [x] ユーザーから確認論点へのフィードバック（Go）を得ている。
 
 ### UX / Operation
 

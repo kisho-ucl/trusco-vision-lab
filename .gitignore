@@ -11,6 +11,10 @@ annotations/
 clips/
 tracking_outputs/
 
+# Symlinks to mounted NAS (not tracked in git)
+dataset_readonly
+task_annotation_clips
+
 # Video files
 *.mp4
 *.mov
