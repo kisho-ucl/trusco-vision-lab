@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Warehouse Clip Annotation</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #f5f5f5; }
+    h1 { margin: 0 0 0.5rem; }
+    #status { font-weight: bold; margin-bottom: 1rem; }
+    #status.ok { color: #2a7; }
+    #status.err { color: #c33; }
+    #info { margin-bottom: 1rem; color: #444; }
+    #clip-img { max-width: 400px; display: none; border: 1px solid #ccc; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Warehouse Clip Annotation</h1>
+  <p id="status">Loading...</p>
+  <div id="info"></div>
+  <img id="clip-img" alt="First clip frame">
+  <script>
+    const status = document.getElementById('status');
+    const info = document.getElementById('info');
+    const img = document.getElementById('clip-img');
+
+    fetch('/api/manifest')
+      .then(r => r.json())
+      .then(m => {
+        status.textContent = `✓ Server OK — ${m.clips.length} clips loaded`;
+        status.className = 'ok';
+        const c = m.clips[0];
+        info.innerHTML = `First clip: <strong>${c.clip_id}</strong> | ${c.frame_count} frames | cam ${c.camera_id} | ${c.start_time}`;
+        img.src = `/clips/${c.image_folder}/000001.jpg`;
+        img.style.display = 'block';
+      })
+      .catch(e => {
+        status.textContent = '✗ Failed to load manifest: ' + e;
+        status.className = 'err';
+      });
+  </script>
+</body>
+</html>
