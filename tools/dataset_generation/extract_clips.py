@@ -175,7 +175,7 @@ def main():
 
         saved_indices = []
         for seq_idx, (json_frame_id, bbox) in enumerate(frame_list, start=1):
-            orig_frame = json_frame_id * 2 + 1
+            orig_frame = json_frame_id
             frame_img = get_frame(cam, orig_frame, ts_cache, start_time_sec, undis_dir)
             if frame_img is None:
                 continue
