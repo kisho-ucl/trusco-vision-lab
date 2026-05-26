@@ -71,32 +71,137 @@ Keyboard shortcuts:
 
 ### Visual Draft
 
-v0はUIの完成イメージが重要なため、本来はHTML mockまたはASCII layoutを確認してから実装するべきだった。
+**2026-05-26 確認済み（Go）**
 
-今回の初期prototypeは、Spec-driven workflowを固める前に先行して実装したexploratory prototypeとして扱う。
+#### Browse mode（デフォルト）
 
-そのため、このv0 prototypeをそのまま完成形とはみなさない。現在のSpecでは、annotation batch単位のcoverage、person ID correction、clip内のwork segment、先行研究に基づくcluster-level labelingなど、当初prototypeになかった重要要件が増えている。
+```
++------------------------------------------------------------------------------+
+| ← 3 / 15 →           [Save]  [Export JSONL]       ████████░░  8/15 labeled  |
++--------------------------------------------+--------+------------------------+
+|                                            |        |  77_track_2_A1         |
+|                                            |        |  camera:  A1           |
+|          [ frame viewer ]                  |        |  start:   09:00:01     |
+|                                            |        |  end:     09:00:08     |
+|                                            |        |  zone:    unknown      |
+|                      Frame 4 / 8           |        |                        |
++--------------------------------------------+        |  Note:                 |
+|  ┌──Transport──────┐┌──(unlabeled)───────┐ |        |  [                 ]   |
+|  └─────────────────┘└───────────────────┘ |        |                        |
+|  1    2    3    4    5    6    7    8      |        |  [Inspect]             |
+|                    ▲                      |        |  [Sort]                |
+|                 playhead                  |        |  [Transport]           |
+|  [+ Add boundary]  [× Del boundary]       |        |  [Other]               |
++--------------------------------------------+        |  [Unclear]             |
+                                                      +------------------------+
+```
 
-次にUIを進める前に、改めてVisual Draftを作り、Go / Reviseを確認する。
+#### Segment select mode（セグメントバーをクリック）
 
-### Open Questions
+```
++------------------------------------------------------------------------------+
+| ← 3 / 15 →           [Save]  [Export JSONL]       ████████░░  8/15 labeled  |
++--------------------------------------------+--------+------------------------+
+|  ▶ Seg 1: frames 1–4  [× deselect]         |        |  77_track_2_A1         |
+|                                            |        |  ...（同上）           |
+|  +------+ +------+ +------+ +------+       |        |                        |
+|  | fr 1 | | fr 2 | | fr 3 | | fr 4 |       |        |  Note:                 |
+|  +------+ +------+ +------+ +------+       |        |  [                 ]   |
+|                                            |        |                        |
++--------------------------------------------+        |  [Inspect]             |
+|  ┌──Transport ✓────┐┌──(unlabeled)───────┐ |        |  [Sort]                |
+|  └─────────────────┘└───────────────────┘ |        |  [Transport ✓]         |
+|  1    2    3    4    5    6    7    8      |        |  [Other]               |
+|                    ▲                      |        |  [Unclear]             |
+|  [+ Add boundary]  [× Del boundary]       |        +------------------------+
++--------------------------------------------+
+```
 
-- 実tracking outputの形式は何か。
-- `clip_id` はどの粒度で一意にするか。
-- annotation labelの定義をどこまで明文化するか。
-- noteには曖昧さだけでなく、object / scene state transitionの観察も書くか。
+#### キーボードショートカット
+
+| キー | 動作 |
+|---|---|
+| `←` / `→` | プレイヘッド移動・viewer更新 |
+| `B` | 現在フレームの直後に境界追加 |
+| `1`–`5` | 選択中セグメントにラベル付与（segment select mode） |
+| `Esc` | segment select mode を解除 |
+
+#### 境界の仕様
+
+- `[+ Add boundary]` またはキー `B` → 現在フレームの**直後**に境界を追加し、clipを2つのセグメントに分割。
+- 境界はタイムライン上でドラッグして位置を調整できる。
+- `[× Del boundary]` → 選択中の境界を削除（2つのセグメントを結合）。
+
+### Architecture Decisions
+
+**2026-05-26 決定済み：**
+
+- **サーバ**: Python（Flask）。`python server.py` でlocalhost起動。静的HTMLのみでは不可。
+- **clip配信**: サーバ経由で `image_folder` の連番JPGを配信（CORS回避）。
+- **ラベル構造**: 1 clip = 複数 work_segment。各セグメントに label を持つ。
+- **保存先**: `task_annotation_clips/{result_id}/annotations.jsonl`（clipの隣）。
+- **途中保存**: サーバ側ファイル保存（localStorage不使用）。
+
+```json
+{
+  "clip_id": "77_track_2_A1",
+  "work_segments": [
+    {"start_frame": 1, "end_frame": 4, "label": "Transport"},
+    {"start_frame": 5, "end_frame": 8, "label": "Sort"}
+  ],
+  "note": "",
+  "annotated_at": "2026-05-26T15:00:00+09:00"
+}
+```
+
+### Decisions
+
+| 項目 | 決定 |
+|---|---|
+| note の粒度 | セグメントごと（clip全体ではない） |
+| 境界削除時のラベル | 前方セグメントが後方を吸収。前方のラベルを維持。 |
+| 未ラベルセグメントで次へ | 警告なしで進めてよい。未ラベルはannotations.jsonlに含めない。 |
+| ラベル種別 | Inspect / Sort / Transport / Other / Unclear の5種。 |
+
+### Implementation Path
+
+実装の順序は以下を目安にする。詳細設計は実装しながら決める。
+
+1. **Flask server 最小構成** — manifest.json 読み込み、clip画像配信（`/clips/<result_id>/<path>`）、annotations.jsonl への保存 API。
+2. **Browse mode UI** — フレームviewer + プレイヘッド（←→キー / ドラッグ）+ clip間ナビ。
+3. **境界操作** — Add boundary（現在フレーム直後）/ Del boundary（前方吸収）/ ドラッグ移動。
+4. **Segment select mode** — セグメントバークリック → サムネイル横並び表示 → ラベルボタンで付与。
+5. **保存・再開** — `[Save]` でserver側ファイルに書き込み、再読み込み時にrestore。
+6. **Export JSONL** — annotations.jsonl をブラウザからダウンロード、またはサーバ側パスを表示。
 
 ### Implementation Gate
 
 - [x] Goal / Scope / Success Criteriaを確認した。
 - [x] 未決事項がv0 prototypeを止めない。
-- [ ] 次回以降、UIを大きく作る前はVisual Draftを確認する。
+- [x] Visual Draftを確認してGo判断した（2026-05-26）。
+- [x] Open Questionsをすべてクローズした（2026-05-26）。
+- [ ] Flaskサーバの最小実装が動作確認できた。
 
 ### Status
 
 Exploratory prototype implemented in `tools/annotation`.
 
 This prototype is useful for checking manifest import, simple labeling, localStorage autosave, and JSONL export, but it is not the final UI direction.
+
+**2026-05-26 時点での確認事項:**
+
+- v0プロトタイプは静的HTML/JSで、Pythonサーバではない。
+- `video_url` / `thumbnail_url` を期待しているが、`extract_clips.py` が生成するmanifestは `image_folder`（連番JPG）。実データとUIが一度も接続されていない。
+- `tools/annotation/generate_manifest.py` は `tools/dataset_generation/extract_clips.py` と重複。後者がバグ修正済みの正式版。前者は削除候補。
+- annotation toolの役割: clip抽出パイプライン（`extract_clips.py`）とは分離。manifestを受け取り、ラベルを付けて保存するだけ。
+
+**v0→v1への方針転換（決定済み）:**
+
+- UIはPythonサーバ（Flask）で提供する。`python server.py` でlocalhost起動。
+- clip画像はサーバ経由で配信（CORS問題を回避）。
+- 1 clip = 1 label ではなく、**1 clip = 複数work_segment** 対応。
+- annotation結果の保存先: `task_annotation_clips/{result_id}/annotations.jsonl`。
+- 途中保存: localStorage ではなくサーバ側ファイル保存。
 
 ## v0.5 Visual Draft Refresh
 

@@ -106,22 +106,23 @@ Top items:
 - construction / top-view / STAD / group activity / logistics関連の調査カードを整理。
 - surveyの入口READMEを整理。
 - 5月進捗報告を実施。
+- 新サーバでの初期セットアップ完了（symlinks, `.venv_trusco-vision`）。
+- `extract_clips.py` のフレームインデックスバグ修正（`orig_frame = json_frame_id * 2 + 1` → `json_frame_id`）。stitch動画用の係数をper-cameraにそのまま流用していたのが原因。
+- `tools/trackiing_viewer` → `tools/tracking_viewer` typo修正。
+- Result_ID=77のデバッグclip（15トラック）で人物が正しく写っていることを確認。
+- annotation toolの設計整理：clip抽出パイプライン（`extract_clips.py`）とannotation UIを切り離して認識。
 
 ### In Progress
 
 - SOTA寄りのbaseline候補整理。
-- LART / VideoMAE / STAD系の位置づけ確認。
-- TRUSCO映像処理基盤のSkill / module化構想。
-- object / scene state transitionを使った作業認識の構想。
-- 半自動annotation workflowの構想とprototype v0。
+- annotation tool v0のMini Spec見直しとVisual Draft確認。
+- Pythonサーバ型annotation toolの設計（Flask, clip画像配信 + サーバ側ラベル保存）。
 
 ### Next
 
-- 報告会フィードバックを整理する。
+- annotation tool v0のVisual DraftでGo/Revise確認 → 最小実装。
+- 全トラック対象のextract_clips.py実行（tmuxで）。
 - 重要論文の精読とbaseline候補絞り込みへ進む。
-- TRUSCO映像処理基盤のSkill / module棚卸しを行う。
-- 環境状態変化を使う特徴設計を具体化する。
-- 半自動annotation toolの最小実装案を作る。
 
 ## Important Links
 

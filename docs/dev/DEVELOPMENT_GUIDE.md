@@ -125,6 +125,38 @@ logsは毎回書かない。
 
 日々の細かい実装メモは、必要ならMini SpecやREADMEに反映する。
 
+## Python Environment
+
+このプロジェクトの実行環境は pyenv で管理する。
+
+- venv名: `.venv_trusco-vision`
+- Python: 3.10.11
+- 実行パス: `/home/kisho_ucl/.pyenv/versions/.venv_trusco-vision/bin/python`
+- パッケージ: `opencv-python`, `tqdm`（必要に応じて追加）
+
+新しいパッケージを追加する場合は、上記パスの `pip` を使う。
+
+## Design Draft Method
+
+UIやワークフローの完成イメージをすり合わせる際は、以下の形式をMini Specに直接書く。
+
+- **ASCII layout**: 画面構成の確認。markdownプレビューで見られる。
+- **Mermaid**: フロー・データフロー。VS Codeでレンダリングされる。
+- **HTML mock**: インタラクションを確認したいときはファイルをブラウザで開く。
+
+Visual Draftは実装ではない。ユーザーがGo / Reviseを判断してから実装に入る。
+
+## Collaboration Style
+
+AIは実装の前に確認論点を最大3つ出し、ユーザーのGo / Revise判断を待つ。
+
+「全投げ」にしない。設計の合意と実装を分けることで、後から気づく手戻りを減らす。
+
+具体的には:
+- 仕様が曖昧なときはチャットで選択肢を整理する。
+- 実装に入る前に Mini Spec の Implementation Gate を確認する。
+- 大きな方向修正はSpecに反映する前にチャットで議論する。
+
 ## Read-Only Data Policy
 
 - `/mnt/bigdata` および `/mnt/gazania` は、倉庫実データ用の参照専用マウントであり、**完全読み込み専用（Read-only）のトップレベル保護対象**です。
