@@ -324,7 +324,7 @@ function renderMeta() {
   dl.innerHTML = '';
   if (!clip) return;
   const rows = [
-    ['Camera',   clip.camera_id],
+    ['Camera',   Array.isArray(clip.cameras) ? clip.cameras.join(', ') : (clip.camera_id ?? '–')],
     ['Zone',     clip.zone_hint],
     ['Start',    clip.start_time?.slice(0, 19).replace('T', ' ')],
     ['End',      clip.end_time?.slice(0, 19).replace('T', ' ')],

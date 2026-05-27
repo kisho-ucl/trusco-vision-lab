@@ -17,7 +17,7 @@ task_annotation_clips/
 └── {result_id}/
     ├── manifest.json
     └── clips/
-        ├── track_1_A4/
+        ├── track_1/           # カメラをまたいだ1人分の連続クリップ
         │   ├── 000001.jpg
         │   └── ...
         └── ...
@@ -80,7 +80,7 @@ task_annotation_clips/{result_id}/annotations.jsonl
 
 ```json
 {
-  "clip_id": "77_track_3_A4",
+  "clip_id": "77_track_3",
   "person_id": 5,
   "work_segments": [
     {
@@ -102,7 +102,7 @@ task_annotation_clips/{result_id}/annotations.jsonl
 
 | フィールド | 型 | 説明 |
 |-----------|-----|------|
-| `clip_id` | string | `{result_id}_track_{track_id}_{cam}` |
+| `clip_id` | string | `{result_id}_track_{track_id}` |
 | `person_id` | int \| null | アノテータが付けた実際の人物ID（0–38）。未設定時は `null` |
 | `work_segments` | array | 作業区間のリスト（1-based フレーム番号） |
 | `work_segments[].start_frame` | int | 区間開始フレーム（1始まり） |

@@ -123,7 +123,7 @@ def main():
         tracking_data = json.load(f)
     print(f"Frames in JSON: {len(tracking_data)}")
 
-    # Collect sampled frames per (track_id, cam)
+    # Collect sampled frames per track_id (camera may change per frame)
     clips_data = {}
     for frame in tracking_data:
         json_frame_id = frame.get("frame_id")
@@ -146,11 +146,12 @@ def main():
                     continue
 
             global_bbox = track.get("bbox")
-            clips_data.setdefault((track_id, cam), []).append((json_frame_id, bbox, global_bbox))
+            # key is track_id only; cam is stored per-frame
+            clips_data.setdefault(track_id, []).append((json_frame_id, cam, bbox, global_bbox))
 
     sorted_keys = sorted(
         clips_data.keys(),
-        key=lambda x: (int(x[0]) if x[0].isdigit() else x[0], x[1])
+        key=lambda x: int(x) if x.isdigit() else x
     )
     if args.limit_tracks is not None:
         sorted_keys = sorted_keys[:args.limit_tracks]
@@ -168,14 +169,16 @@ def main():
     manifest_clips = []
     total_saved = 0
 
-    for track_id, cam in tqdm(sorted_keys, desc="Tracks"):
-        frame_list = clips_data[(track_id, cam)]
-        clip_folder = f"track_{track_id}_{cam}"
+    for track_id in tqdm(sorted_keys, desc="Tracks"):
+        frame_list = clips_data[track_id]
+        clip_folder = f"track_{track_id}"
         clip_dir = os.path.join(clips_dir, clip_folder)
         os.makedirs(clip_dir, exist_ok=True)
 
-        saved_frames = []  # list of (orig_frame, global_bbox)
-        for seq_idx, (json_frame_id, bbox, global_bbox) in enumerate(frame_list, start=1):
+        saved_frames = []  # list of (orig_frame, cam, global_bbox)
+        seen_cams = []     # ordered unique cameras used
+        save_seq = 0
+        for seq_idx, (json_frame_id, cam, bbox, global_bbox) in enumerate(frame_list, start=1):
             orig_frame = json_frame_id
             frame_img = get_frame(cam, orig_frame, ts_cache, start_time_sec, undis_dir)
             if frame_img is None:
@@ -183,8 +186,11 @@ def main():
             crop = crop_person(frame_img, bbox)
             if crop is None:
                 continue
-            cv2.imwrite(os.path.join(clip_dir, f"{seq_idx:06d}.jpg"), crop)
-            saved_frames.append((orig_frame, global_bbox))
+            save_seq += 1
+            cv2.imwrite(os.path.join(clip_dir, f"{save_seq:06d}.jpg"), crop)
+            saved_frames.append((orig_frame, cam, global_bbox))
+            if cam not in seen_cams:
+                seen_cams.append(cam)
 
         if len(saved_frames) < args.min_frames:
             # remove the directory if it was created but has too few frames
@@ -200,7 +206,7 @@ def main():
         offset_x = config.get("floor_plan_offset_x", 3885.36)
         offset_y = config.get("floor_plan_offset_y", 812.703)
         trajectory = []
-        for _, gbbox in saved_frames:
+        for _, _cam, gbbox in saved_frames:
             if gbbox and len(gbbox) == 4:
                 cx = round(gbbox[0] - offset_x + gbbox[2] / 2, 1)
                 cy = round(gbbox[1] - offset_y + gbbox[3] / 2, 1)
@@ -209,11 +215,11 @@ def main():
                 trajectory.append(None)
 
         manifest_clips.append({
-            "clip_id": f"{args.result_id}_track_{track_id}_{cam}",
+            "clip_id": f"{args.result_id}_track_{track_id}",
             "batch_id": args.result_id,
             "person_id": f"track-{track_id}",
             "original_tracking_id": track_id,
-            "camera_id": cam,
+            "cameras": seen_cams,
             "start_time": (base_dt + timedelta(seconds=start_orig * 0.2)).isoformat(),
             "end_time":   (base_dt + timedelta(seconds=end_orig   * 0.2)).isoformat(),
             "duration_sec": round((end_orig - start_orig) * 0.2, 2),

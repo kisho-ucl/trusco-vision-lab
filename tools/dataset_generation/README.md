@@ -68,12 +68,16 @@ task_annotation_clips/
 └── {result_id}/
     ├── manifest.json              # クリップ一覧 + 軌跡データ
     └── clips/
-        ├── track_{id}_{cam}/
+        ├── track_{id}/            # カメラをまたいだ1人分の連続クリップ
         │   ├── 000001.jpg
         │   ├── 000002.jpg
         │   └── ...
         └── ...
 ```
+
+> **注意**: 以前は `track_{id}_{cam}` でカメラ単位に分割していたが、1人が複数カメラにまたがって  
+> 存在する場合にクリップが分断されてしまう問題を修正し、`track_{id}` 単位（人単位）に統合した。  
+> フレームごとに最適カメラ（`src_cam_duplicate_list[0]`）から切り出す。
 
 **manifest.json の主要フィールド：**
 
@@ -83,9 +87,9 @@ task_annotation_clips/
   "labels": ["Inspect", "Sort", "Transport", "Other", "Unclear"],
   "clips": [
     {
-      "clip_id": "77_track_3_A4",
+      "clip_id": "77_track_3",
       "person_id": "track-3",
-      "camera_id": "A4",
+      "cameras": ["A4", "A2"],     // 使用カメラ一覧（フレームをまたいで変わる場合あり）
       "start_time": "2024-10-03T09:00:...",
       "duration_sec": 12.4,
       "frame_count": 62,
