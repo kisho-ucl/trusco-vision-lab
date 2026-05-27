@@ -5,7 +5,9 @@
     "start_time": "09:00:00",
     "ts_cache_file": "dataset_readonly/ts_result/20241003-tscaches_adjusted.pkl",
     "undis_dir": "/mnt/gazania/trusco-undis/2024/2024-10-03",
-    "track_json": "dataset_readonly/fastops/result/77/track/modified_kalman_dtw2_adjusted_tracking_result.json"
+    "track_json": "dataset_readonly/fastops/result/77/track/modified_kalman_dtw2_adjusted_tracking_result.json",
+    "floor_plan_offset_x": 3885.36,
+    "floor_plan_offset_y": 812.703
   },
   "78": {
     "session_name": "kisho_20241003_1000_1100",

@@ -145,7 +145,8 @@ def main():
                 if bbox is None:
                     continue
 
-            clips_data.setdefault((track_id, cam), []).append((json_frame_id, bbox))
+            global_bbox = track.get("bbox")
+            clips_data.setdefault((track_id, cam), []).append((json_frame_id, bbox, global_bbox))
 
     sorted_keys = sorted(
         clips_data.keys(),
@@ -173,8 +174,8 @@ def main():
         clip_dir = os.path.join(clips_dir, clip_folder)
         os.makedirs(clip_dir, exist_ok=True)
 
-        saved_indices = []
-        for seq_idx, (json_frame_id, bbox) in enumerate(frame_list, start=1):
+        saved_frames = []  # list of (orig_frame, global_bbox)
+        for seq_idx, (json_frame_id, bbox, global_bbox) in enumerate(frame_list, start=1):
             orig_frame = json_frame_id
             frame_img = get_frame(cam, orig_frame, ts_cache, start_time_sec, undis_dir)
             if frame_img is None:
@@ -183,16 +184,30 @@ def main():
             if crop is None:
                 continue
             cv2.imwrite(os.path.join(clip_dir, f"{seq_idx:06d}.jpg"), crop)
-            saved_indices.append(orig_frame)
+            saved_frames.append((orig_frame, global_bbox))
 
-        if len(saved_indices) < args.min_frames:
+        if len(saved_frames) < args.min_frames:
             # remove the directory if it was created but has too few frames
             for f in os.listdir(clip_dir):
                 os.remove(os.path.join(clip_dir, f))
             os.rmdir(clip_dir)
             continue
 
+        saved_indices = [f[0] for f in saved_frames]
         start_orig, end_orig = saved_indices[0], saved_indices[-1]
+
+        # Global bbox is TLWH; convert to floor-plan center coordinates
+        offset_x = config.get("floor_plan_offset_x", 3885.36)
+        offset_y = config.get("floor_plan_offset_y", 812.703)
+        trajectory = []
+        for _, gbbox in saved_frames:
+            if gbbox and len(gbbox) == 4:
+                cx = round(gbbox[0] - offset_x + gbbox[2] / 2, 1)
+                cy = round(gbbox[1] - offset_y + gbbox[3] / 2, 1)
+                trajectory.append([cx, cy])
+            else:
+                trajectory.append(None)
+
         manifest_clips.append({
             "clip_id": f"{args.result_id}_track_{track_id}_{cam}",
             "batch_id": args.result_id,
@@ -203,8 +218,9 @@ def main():
             "end_time":   (base_dt + timedelta(seconds=end_orig   * 0.2)).isoformat(),
             "duration_sec": round((end_orig - start_orig) * 0.2, 2),
             "image_folder": f"clips/{clip_folder}",
-            "frame_count": len(saved_indices),
+            "frame_count": len(saved_frames),
             "frame_indices": saved_indices,
+            "trajectory": trajectory,
             "zone_hint": "unknown",
         })
         total_saved += len(saved_indices)

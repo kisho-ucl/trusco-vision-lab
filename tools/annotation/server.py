@@ -38,7 +38,7 @@ def create_app(result_id: str, clips_base: Path) -> Flask:
 
     manifest_path = clips_base / result_id / "manifest.json"
     annotations_path = clips_base / result_id / "annotations.jsonl"
-    clips_dir = clips_base / result_id / "clips"
+    clips_dir = clips_base / result_id
 
     @app.route("/")
     def index():

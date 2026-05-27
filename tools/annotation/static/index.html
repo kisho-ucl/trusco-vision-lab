@@ -21,48 +21,68 @@
       <span class="progress-label" id="progressLabel">0 / 0 labeled</span>
     </div>
     <div class="topbar-right">
-      <button class="btn btn-save" id="saveBtn">Save</button>
+      <input type="file" id="importFile" accept=".jsonl,.json" style="display:none">
+      <button class="btn" id="importBtn">Import</button>
       <button class="btn" id="exportBtn">Export JSONL</button>
     </div>
   </header>
 
   <div class="workspace">
 
-    <div class="viewer-col">
-      <div class="viewer-wrap">
-        <img class="frame-img" id="frameImg" alt="">
-        <div class="frame-counter" id="frameCounter">Frame 1 / 1</div>
+    <div class="main-col">
+
+      <div class="top-row">
+        <div class="viewer-wrap">
+          <div class="frame-scene">
+            <img class="frame-ghost ghost-prev" id="framePrev" alt="">
+            <img class="frame-main" id="frameImg" alt="">
+            <img class="frame-ghost ghost-next" id="frameNext" alt="">
+          </div>
+          <div class="frame-counter" id="frameCounter">Frame 1 / 1</div>
+        </div>
+
+        <div class="trajectory-wrap">
+          <svg id="trajectorySvg"
+               viewBox="0 0 3932 2312"
+               preserveAspectRatio="xMidYMid meet">
+            <image href="/static/warehouse.png"
+                   x="0" y="0" width="3932" height="2312"/>
+          </svg>
+        </div>
       </div>
 
-      <div class="timeline-section">
-        <div class="segment-bars" id="segmentBars"></div>
-        <div class="timeline-track" id="timelineTrack">
-          <div class="timeline-ticks" id="timelineTicks"></div>
-          <div class="playhead" id="playhead"></div>
+      <div class="bottom-section">
+        <div class="label-note-row">
+          <div class="label-buttons" id="labelButtons"></div>
+          <div class="segment-actions">
+            <button class="btn btn-sm" id="addBoundaryBtn">+ Boundary</button>
+            <button class="btn btn-sm" id="delBoundaryBtn">× Del</button>
+          </div>
+          <textarea id="noteInput" rows="2" placeholder="Note (segment)..."></textarea>
         </div>
-        <div class="timeline-actions">
-          <button class="btn btn-sm" id="addBoundaryBtn">+ Add boundary</button>
-          <button class="btn btn-sm" id="delBoundaryBtn">× Del boundary</button>
+        <div class="segment-row">
+          <div class="segment-bars" id="segmentBars"></div>
         </div>
+        <div class="thumbnail-strip" id="thumbnailStrip"></div>
       </div>
+
     </div>
 
     <aside class="meta-col">
       <div class="clip-id" id="clipId">–</div>
       <dl class="meta-list" id="metaList"></dl>
-
-      <div class="divider"></div>
-
-      <div class="label-section">
-        <span class="section-title">Labels</span>
-        <div class="label-buttons" id="labelButtons"></div>
+      <div class="person-id-row">
+        <span class="person-id-label">Person ID</span>
+        <select id="personIdSelect" class="person-id-select">
+          <option value="">–</option>
+        </select>
       </div>
-
-      <div class="note-section">
-        <label class="section-title" for="noteInput">Note (segment)</label>
-        <textarea id="noteInput" rows="3" placeholder="Observations..."></textarea>
-      </div>
+      <img class="bibs-thumb" id="bibsThumb" src="/static/bibs.png" alt="Bibs reference">
     </aside>
+
+    <div class="lightbox" id="lightbox">
+      <img src="/static/bibs.png" alt="Bibs reference">
+    </div>
 
   </div>
 </div>
