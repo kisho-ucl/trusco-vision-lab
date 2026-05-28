@@ -1,6 +1,6 @@
 # Research Dashboard
 
-Last updated: 2026-05-22
+Last updated: 2026-05-28
 
 ## Current Thesis Direction
 
@@ -58,6 +58,16 @@ constructionでは俯瞰・監視カメラを用いたworker activity recognitio
 - 半自動annotation workflowを作ると、どれだけ効率的に作業ラベル付きデータを増やせるか。
 - 特徴量抽出やクラスタリングを使って、annotation候補提示を効率化できるか。
 
+### ⚠️ Design Day 前に決めるべき未解決問題（2026-05-28 ミーティング起点）
+
+本格的なアノテーション開始前に、認識モデルの設計から逆算してannotation schemaを確定する必要がある。
+
+- **最終的に欲しい正解データは何か？** 作業ラベル（Inspect / Sort / Transport）だけでよいか、それとも時刻・区間単位のセグメントが必要か。
+- **認識モデルの入力は何か？** trajectory / RGB crop / pose / zone情報のどれを使うかによって、必要なアノテーションが変わる。
+- **向き・姿勢情報は必要か？** 人が働きかけている方向（例：棚に向かっているか台車に向かっているか）が識別に効くなら、アノテーションが必要。
+- **関連オブジェクトのアノテーションは必要か？** 台車・棚・商品などとの空間的関係を正解に含める場合、現ツールでは付けられない。
+- **アノテーターは何人必要か・信頼性担保はどうするか？** 1人で付けるのか、複数人でinter-annotator agreementを取るのか。
+
 ## Work Menu
 
 作業開始時は、このdashboardを見て、その日の気分と残り時間に合わせて1つ選ぶ。
@@ -65,7 +75,7 @@ constructionでは俯瞰・監視カメラを用いたworker activity recognitio
 | Mode | When | Candidate Task |
 |---|---|---|
 | Survey | 論文を読みたい日 | STAD / VideoMAE / construction系の重要論文を1本読み、`survey/findings.md`に短く足す |
-| Design | 頭を整理したい日 | 半自動annotation workflowやSkill / module構成を図・箇条書きで整理する |
+| Design | 頭を整理したい日 | 認識モデル設計からannotation schemaを逆算する・Skill / module構成を図・箇条書きで整理する |
 | Implementation | 手を動かしたい日 | worker clip extractionの最小実装を進める |
 | Experiment | データを見たい日 | 既存tracking outputを確認し、trajectory + zoneで何が取れそうか見る |
 | Writing | 文章化したい日 | `docs/project/research_plan.md`や`docs/project/vision_context.md`を後輩が読める形に整える |
@@ -73,12 +83,11 @@ constructionでは俯瞰・監視カメラを用いたworker activity recognitio
 
 ## Next Decisions
 
-1. 精読する論文を絞る。
-2. 実装前に使うbaseline候補を決める。
-3. データアクセス・サンプル映像・既存tracking出力の所在を確認する。
-4. 最初の実験単位を決める。
+1. **[優先] Design Dayを設けて、annotation schemaを認識モデルから逆算して確定する。**（Active Questions参照）
+2. annotation schemaが決まったら、annotation toolの拡張が必要か判断する。
+3. 精読する論文を絞る。
+4. 実装前に使うbaseline候補を決める。
 5. TRUSCO映像処理基盤のSkill / module化で、まず何を部品として定義するか決める。
-6. 半自動annotation toolの最小構成を決める。
 
 Implementation candidates are tracked in [Implementation Backlog](docs/dev/implementation_backlog.md).
 Development process is tracked in [Development Guide](docs/dev/DEVELOPMENT_GUIDE.md).
@@ -107,22 +116,21 @@ Top items:
 - surveyの入口READMEを整理。
 - 5月進捗報告を実施。
 - 新サーバでの初期セットアップ完了（symlinks, `.venv_trusco-vision`）。
-- `extract_clips.py` のフレームインデックスバグ修正（`orig_frame = json_frame_id * 2 + 1` → `json_frame_id`）。stitch動画用の係数をper-cameraにそのまま流用していたのが原因。
+- `extract_clips.py` のフレームインデックスバグ修正（`orig_frame = json_frame_id * 2 + 1` → `json_frame_id`）。
 - `tools/trackiing_viewer` → `tools/tracking_viewer` typo修正。
-- Result_ID=77のデバッグclip（15トラック）で人物が正しく写っていることを確認。
-- annotation toolの設計整理：clip抽出パイプライン（`extract_clips.py`）とannotation UIを切り離して認識。
+- annotation tool v0 完成（Flask + browser UI, clip抽出・表示・セグメント付け・Exception / Person ID対応）。
+- `extract_clips.py` カメラ分割問題修正：クリップをtrack_id単位（人単位）に統合し、per-frameで最適カメラから切り出すように変更。
+- annotation toolをミーティングでデモ。
 
 ### In Progress
 
-- SOTA寄りのbaseline候補整理。
-- annotation tool v0のMini Spec見直しとVisual Draft確認。
-- Pythonサーバ型annotation toolの設計（Flask, clip画像配信 + サーバ側ラベル保存）。
+- annotation schema設計（認識モデルから逆算して何をアノテーションすべきか検討中）。
 
 ### Next
 
-- annotation tool v0のVisual DraftでGo/Revise確認 → 最小実装。
-- 全トラック対象のextract_clips.py実行（tmuxで）。
-- 重要論文の精読とbaseline候補絞り込みへ進む。
+- **Design Dayを設けてannotation schemaを確定する。**（モデル入力・向き・オブジェクト情報の要否など）
+- annotation schemaが決まったら全トラック対象の `extract_clips.py` 実行（tmuxで）。
+- 重要論文の精読とbaseline候補絞り込み。
 
 ## Important Links
 
