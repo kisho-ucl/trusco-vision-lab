@@ -1,24 +1,38 @@
 # export_overlay_simple.py
-import cv2, json, os
+import cv2, json, os, argparse
+
+def parse_args():
+    p = argparse.ArgumentParser(description="Export tracking overlay video")
+    p.add_argument("--video",    default="/mnt/gazania/trusco-stitch/2024/2024-10-03/new_overlap_0900_1100_2x_nkawa1934.mp4")
+    p.add_argument("--json_track", default="/home/kisho_ucl/kisho_ws/trusco-vision-lab/dataset_readonly/fastops/result/77/track/modified_kalman_dtw2_adjusted_tracking_result.json")
+    p.add_argument("--json_task",  default=None, help="タスクJSONのパス（任意）")
+    p.add_argument("--out",      default="/home/kisho_ucl/kisho_ws/trusco-vision-lab/task_annotation_clips/overlay_77_debug.mp4")
+    p.add_argument("--start_fid", type=int, default=0,     help="開始トラッキングframe_id（含む）")
+    p.add_argument("--end_fid",   type=int, default=2000,  help="終了トラッキングframe_id（含む）、-1で全体")
+    p.add_argument("--divisor",   type=int, default=2,     help="tracking frame_id → video frame の除数")
+    p.add_argument("--x_off",   type=float, default=3885.36)
+    p.add_argument("--y_off",   type=float, default=812.703)
+    return p.parse_args()
+
+args = parse_args()
 
 # 入力/出力
-VIDEO = "/mnt/gazania/trusco-stitch/2024/2024-10-03/new_overlap_0900_1100_2x_nkawa1934.mp4"
-JSON_TRACK = "/home/kisho_ucl/kisho_ws/trusco-vision-lab/dataset_readonly/fastops/result/77/track/modified_kalman_dtw2_adjusted_tracking_result.json"
-JSON_TASK  = None  # タスクJSONなし
-OUT_MP4    = "/home/kisho_ucl/kisho_ws/trusco-vision-lab/task_annotation_clips/overlay_77_debug.mp4"
+VIDEO      = args.video
+JSON_TRACK = args.json_track
+JSON_TASK  = args.json_task
+OUT_MP4    = args.out
 
-# あなたの補正（結合キャンバス→元動画）
-SCALE = 1.0    # 元動画に重ねるなら 1.0、縦横1/2動画なら 0.5
-X_OFF = 3885.36
-Y_OFF =  812.703
+# 座標補正
+SCALE = 1.0
+X_OFF = args.x_off
+Y_OFF = args.y_off
 
-# Result_ID=77 は09:00-10:00（1時間, 5fps=18000frames）
 # stitch動画は09:00-11:00（2時間）を18000framesに圧縮（2x）
 # → tracking frame_id N は video frame N//2 に対応
-VIDEO_FRAME_DIVISOR = 2
+VIDEO_FRAME_DIVISOR = args.divisor
 
-START_FID = 0   # 開始トラッキングフレーム番号（含む）
-END_FID   = 2000  # デバッグ用：最初の100フレームのみ
+START_FID = args.start_fid
+END_FID   = args.end_fid  # -1 で全体
 
 
 # タスク表示（色は #667595, #d86560, #789f84）
@@ -71,16 +85,18 @@ fps   = cap.get(cv2.CAP_PROP_FPS) or 30.0
 total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 print(f"[INFO] input: {vid_w}x{vid_h} @ {fps:.2f}fps, frames={total}")
 
+out_path = OUT_MP4
 fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-writer = cv2.VideoWriter(OUT_MP4, fourcc, fps, (vid_w, vid_h))
+writer = cv2.VideoWriter(out_path, fourcc, fps, (vid_w, vid_h))
 if not writer.isOpened():
     raise RuntimeError("出力ファイルを開けませんでした")
+print(f"[INFO] output: {out_path}")
 
 # 処理ループ（ウィンドウ無し）
 # fid = video frame index
 # tracking frame_id = fid * VIDEO_FRAME_DIVISOR
-video_end = END_FID // VIDEO_FRAME_DIVISOR
 video_start = START_FID // VIDEO_FRAME_DIVISOR
+video_end   = (total - 1) if END_FID < 0 else END_FID // VIDEO_FRAME_DIVISOR
 fid = 0
 while True:
     ok, frame = cap.read()
@@ -149,4 +165,4 @@ while True:
 
 cap.release()
 writer.release()
-print(f"[DONE] saved -> {os.path.abspath(OUT_MP4)}")
+print(f"[DONE] saved -> {os.path.abspath(out_path)}")
