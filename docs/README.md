@@ -31,6 +31,15 @@
 - [dev/experiment_log.md](dev/experiment_log.md): 実験ログの初期置き場。
 - [dev/specs/semi_auto_annotation/SPEC.md](dev/specs/semi_auto_annotation/SPEC.md): 半自動annotation workflowの親仕様。
 - [dev/specs/semi_auto_annotation/MINI_SPECS.md](dev/specs/semi_auto_annotation/MINI_SPECS.md): 半自動annotation workflowの実装単位。
+- [dev/specs/semi_auto_annotation/VISUAL_DRAFT_v0_5.md](dev/specs/semi_auto_annotation/VISUAL_DRAFT_v0_5.md): annotation tool v0.5のVisual Draft。
+
+## tools/ — 実装済みツール
+
+実装済みのツールはそれぞれREADMEを持つ。
+
+- [tools/annotation/README.md](../tools/annotation/README.md): annotation tool v0（Flask + browser UI）。clip単位でフレームをめくりながら作業区間を付けるWebツール。**完成・運用可能。**
+- [tools/dataset_generation/README.md](../tools/dataset_generation/README.md): extract_clips.py。tracking JSONからtrack_id単位の人物cropクリップを生成。
+- [tools/tracking_viewer/README.md](../tools/tracking_viewer/README.md): export_overlay.py。stitch動画にtracking結果をオーバーレイしてmp4に書き出す。
 
 ## archive/ — 退避済み
 
@@ -43,6 +52,6 @@
 今後、後輩や共同研究者に共有できるレベルまで育てたいもの。
 
 - TRUSCO映像処理基盤のSkill / module documentation
-- 半自動annotation workflow: [spec](dev/specs/semi_auto_annotation/SPEC.md), [mini specs](dev/specs/semi_auto_annotation/MINI_SPECS.md), [prototype](../tools/annotation/README.md)
-- clip extraction / feature extraction / clustering / dataset exportの手順
+- annotation schemaの確定（認識モデルから逆算・Design Day待ち）
+- feature extraction / clustering / dataset export の手順
 - baseline実験の再現手順
