@@ -7,9 +7,10 @@
 ## Document Roles
 
 - `DASHBOARD.md`: 現在地、仮説、次の判断を置く。
-- `docs/specs/<thing>/SPEC.md`: 作りたいもの単位の親仕様を置く。
-- `docs/specs/<thing>/MINI_SPECS.md`: 実装単位のMini Specを地続きで置く。
-- `docs/implementation_backlog.md`: まだSpec化していない実装候補を置く。
+- `docs/dev/specs/<thing>/SPEC.md`: 作りたいもの単位の親仕様を置く。
+- `docs/dev/specs/<thing>/MINI_SPECS.md`: 実装単位のMini Specを地続きで置く。
+- `docs/dev/implementation_backlog.md`: まだSpec化していない実装候補を置く。
+- `tools/<tool>/README.md`: 完成したツールの実行手順・出力仕様を置く。
 - `logs/YYYY-MM-DD.md`: 方針転換、重要なフィードバック、実験結果、あとで引用したい判断だけを任意で残す。
 
 ## Workflow
@@ -132,9 +133,11 @@ logsは毎回書かない。
 - venv名: `.venv_trusco-vision`
 - Python: 3.10.11
 - 実行パス: `/home/kisho_ucl/.pyenv/versions/.venv_trusco-vision/bin/python`
-- パッケージ: `opencv-python`, `tqdm`（必要に応じて追加）
+- パッケージ: `opencv-python`, `tqdm`, `flask`（必要に応じて追加）
 
-新しいパッケージを追加する場合は、上記パスの `pip` を使う。
+リポジトリルートに `.python-version` ファイルがあり、`pyenv virtualenv-init` が `.bashrc` に設定済みのため、`trusco-vision-lab/` 配下では **自動的にvenvが有効** になる。`which python` で `/home/kisho_ucl/.pyenv/shims/python` が返れば正常。
+
+新しいパッケージを追加する場合は、venvが有効な状態で `pip install <package>` を使う。
 
 ## Design Draft Method
 
